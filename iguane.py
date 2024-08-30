@@ -315,14 +315,18 @@ if __name__ == "__main__":
         CLUSTER = {k:CLUSTER[k] for k in gpus}
         CLUSTER = {
             "breakdown": CLUSTER,
-            "total":     sum(CLUSTER.values(), 0.0),
+            "total":     sum(CLUSTER.values(), 0),
         }
         if  not CLUSTER["breakdown"]:
             del CLUSTER["breakdown"]
         if args.json:
             print(json.dumps(CLUSTER, indent=2))
         else:
-            print(f'{CLUSTER["total"]:5.2f}') # Just the total units of GPU
+            # Just the total units of GPU
+            if isinstance(CLUSTER["total"], int):
+                print(CLUSTER["total"])
+            else:
+                print(f'{CLUSTER["total"]:5.2f}')
     else:
         DATA = {}
         gpus = RAWDATA.keys()
