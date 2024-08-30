@@ -189,6 +189,10 @@ UGR_VERSIONS = {
 
 
 @fom
+def fom_count(name, *, args=None):
+    return 1
+
+@fom
 def fom_ugr(name, *, args=None):
     weights = UGR_VERSIONS[args.ugr_version if args else "1.0"]
     ref  = RAWDATA['A100-SXM4-40GB']
@@ -266,7 +270,7 @@ if __name__ == "__main__":
     
     
     if   args.list_units:
-        units = ['IGUANE', 'UGR']
+        units = list(FOM.keys())
         if args.reverse:
             units = units[::-1]
         if args.json:
