@@ -191,6 +191,20 @@ UGR_VERSIONS = {
 @fom
 def fom_count(name, *, args=None):
     return 1
+@fom
+def fom_fp16(name, *, args=None):
+    data = RAWDATA[name]
+    return data['fp16'] or data['fp32']
+@fom
+def fom_fp32(name, *, args=None):
+    return RAWDATA[name]['fp32']
+@fom
+def fom_fp64(name, *, args=None):
+    return RAWDATA[name]['fp64']
+@fom
+def fom_tf32(name, *, args=None):
+    data = RAWDATA[name]
+    return data['tf32'] or data['fp32']
 
 @fom
 def fom_ugr(name, *, args=None):
