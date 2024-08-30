@@ -3,6 +3,7 @@ import argparse
 import glob, re
 import json
 import sys
+import pathlib
 
 
 def matchgpu(name, pat):
@@ -228,6 +229,8 @@ if __name__ == "__main__":
                       help="List known UGR/RGU versions")
     argp.add_argument('--list-gpus', '-l', action='store_true',
                       help="List known GPUs")
+    argp.add_argument('--input', '-i', type=pathlib.Path, default=None,
+                      help="Input JSON file")
     argp.add_argument('--gpu',  '-G', type=str, default=None,
                       help="Selected GPU")
     
@@ -291,6 +294,31 @@ if __name__ == "__main__":
         else:
             for k in ugr_versions.keys():
                 print(k) # Only print name, not weights data
+    elif args.input:
+        with open(args.input) as f:
+            CLUSTER = json.load(f)
+        CLUSTER = {
+            k: c*FOM[args.unit](k, args=args)
+            for k, c in CLUSTER.items()
+            if  k    in RAWDATA
+        }
+        gpus = CLUSTER.keys()
+        if args.reverse:
+            gpus = reversed(gpus)
+        gpus = [k for k in gpus if matchgpu(k, args.gpu)]
+        if args.sort:
+            gpus = sorted(gpus, key=lambda k:CLUSTER[k], reverse=args.reverse)
+        CLUSTER = {k:CLUSTER[k] for k in gpus}
+        CLUSTER = {
+            "breakdown": CLUSTER,
+            "total":     sum(CLUSTER.values(), 0.0),
+        }
+        if  not CLUSTER["breakdown"]:
+            del CLUSTER["breakdown"]
+        if args.json:
+            print(json.dumps(CLUSTER, indent=2))
+        else:
+            print(f'{CLUSTER["total"]:5.2f}') # Just the total units of GPU
     else:
         DATA = {}
         gpus = RAWDATA.keys()
