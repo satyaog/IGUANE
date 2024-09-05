@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import argparse
+import logging
+import pathlib
 import glob, re
 import json
 import sys
-import pathlib
-from iguane.fom import UGR_VERSIONS, RAWDATA, FOM
+from iguane.log import logger
+from iguane.fom import _CURRENT_FOM_VERSION, FIELDS, UGR_VERSIONS, RAWDATA, FOM, FOM_VERSIONS_WEIGHTS
 
 
 def matchgpu(name, pat):
@@ -34,6 +36,8 @@ if __name__ == "__main__":
                       help="Input JSON file")
     argp.add_argument('--gpu',  '-G', type=str, default=None,
                       help="Selected GPU")
+    argp.add_argument('--verbose', '-v',   action='count', default=0,
+                      help="Increase verbosity level")
 
     ogrp = argp.add_argument_group('OUTPUT FORMAT', 'Output format control')
     ogrp.add_argument('--delimiter', '-d', type=str, default=',',
@@ -45,6 +49,8 @@ if __name__ == "__main__":
                       help="Dump output as delimited text")
 
     ugrp = argp.add_argument_group('UNITS', 'Unit/FoM selection')
+    ugrp.add_argument('--norm',            action='store_true',
+                      help="Normalize the weights to 1.0")
     umtx = ugrp.add_mutually_exclusive_group()
     umtx.add_argument('--unit', '-u', '--fom', type=str.lower, default='ugr',
                       choices=sorted(set(FOM.keys()) | {'iguana', 'rgu'}),
@@ -57,14 +63,19 @@ if __name__ == "__main__":
                       help="Select UGR/RGU unit-equivalence")
     umtx.add_argument('--rgu',     action='store_const', dest='unit', const='ugr',
                       help="Select UGR/RGU unit-equivalence")
-    ugrp.add_argument('--ugr-version', type=str, default='1.0',
-                      choices=UGR_VERSIONS.keys(),
-                      help="Select UGR ponderation version")
+    ugrp.add_argument('--fom-version', type=str, default=_CURRENT_FOM_VERSION,
+                      choices=FOM_VERSIONS_WEIGHTS.keys(),
+                      help="Select Figure-of-Merit ponderation version")
+    ugrp.add_argument('--custom-weights', type=str,
+                      help='Use custom weights in the form \'{"ref": "GPU", ' + ', '.join(f'"{f}": 0.0' for f in FIELDS) + '}\'')
 
     # Parse Arguments
     args = argp.parse_args(sys.argv[1:])
     args.unit = {'iguana': 'iguane', 'rgu': 'ugr'}.get(args.unit, args.unit)
-
+    if args.fom_version:
+        args.unit = "fom_version"
+    if args.verbose:
+        logger.setLevel(logging.CRITICAL - (args.verbose - 1) * 10)
 
     if   args.list_units:
         units = list(FOM.keys())
