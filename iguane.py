@@ -94,18 +94,30 @@ def fom(f):
 #
 # https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/quadro-rtx-8000-us-nvidia-946977-r1-web.pdf
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf
-#     RTX8000:   Die TU102, fully enabled (72 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1770 MHz
-#                FP32: 1770e6*4608*2/1e12        =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
-#                FP64: 1770e6*72*2*2/1e12        =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                FP16: 1770e6*576*(4*4*4)*2/1e12 = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
-#     TITAN RTX: Die TU102, fully enabled (72 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1770 MHz
-#                FP32: 1770e6*4608*2/1e12        =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
-#                FP64: 1770e6*72*2*2/1e12        =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                FP16: 1770e6*576*(4*4*4)*2/1e12 = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
-#     T4:        Die TU104, 83.3% enabled (40 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1590 MHz
-#                FP32: 1590e6*2560*2/1e12        =   8.1408  TFLOPS (1 FP32 FMA per CUDA Core)
-#                FP64: 1590e6*40*2*2/1e12        =   0.2544  TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                FP16: 1590e6*320*(4*4*4)*2/1e12 =  65.1264  TFLOPS (320 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#     RTX-2080:       Die TU104-400-A1, 95.8% enabled (46 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1710 MHz
+#                     FP32: 1710e6*2944*2/1e12        =  10.06848 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1710e6*46*2*2/1e12        =   0.31464 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1710e6*368*(4*4*4)*2/1e12 =  80.54784 TFLOPS (368 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#     RTX-2080-Super: Die TU104-450-A1, fully enabled (48 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1815 MHz
+#                     FP32: 1815e6*3072*2/1e12        =  11.15136 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1815e6*48*2*2/1e12        =   0.34848 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1815e6*384*(4*4*4)*2/1e12 =  89.21088 TFLOPS (384 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#     RTX-2080-Ti:    Die TU102-300-K1-A1, 94.4% enabled (68 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1545 MHz
+#                     FP32: 1545e6*4352*2/1e12        =  13.44768 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1545e6*68*2*2/1e12        =   0.42024 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1545e6*544*(4*4*4)*2/1e12 = 107.58144 TFLOPS (544 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#     TITAN RTX:      Die TU102-400-A1, fully enabled (72 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1770 MHz
+#                     FP32: 1770e6*4608*2/1e12        =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1770e6*72*2*2/1e12        =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1770e6*576*(4*4*4)*2/1e12 = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#     T4:             Die TU104, 83.3% enabled (40 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1590 MHz
+#                     FP32: 1590e6*2560*2/1e12        =   8.1408  TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1590e6*40*2*2/1e12        =   0.2544  TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1590e6*320*(4*4*4)*2/1e12 =  65.1264  TFLOPS (320 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#     RTX8000:        Die TU102, fully enabled (72 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1770 MHz
+#                     FP32: 1770e6*4608*2/1e12        =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1770e6*72*2*2/1e12        =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1770e6*576*(4*4*4)*2/1e12 = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
 #
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/technologies/NVIDIA-ADA-GPU-PROVIZ-Architecture-Whitepaper_1.1.pdf
 # https://resources.nvidia.com/en-us-l40s/l40s-datasheet-28413
@@ -165,8 +177,11 @@ RAWDATA = {            #             TFLOPS          TFLOPS          TFLOPS     
     'V100-SXM2-16GB':  dict(fp16=125.337600, fp32=15.667200, fp64= 7.833600, tf32=      None, memgb= 16,  membw= 900, tdp=300),
     'V100-SXM2-32GB':  dict(fp16=125.337600, fp32=15.667200, fp64= 7.833600, tf32=      None, memgb= 32,  membw= 900, tdp=300),
     'V100S-PCIe-32GB': dict(fp16=130.826240, fp32=16.353280, fp64= 8.176640, tf32=      None, memgb= 32,  membw=1134, tdp=250),
-    'T4':              dict(fp16= 65.126400, fp32= 8.140800, fp64= 0.254400, tf32=      None, memgb= 16,  membw= 300, tdp= 70),
+    'RTX-2080':        dict(fp16= 80.547840, fp32=10.068480, fp64= 0.314640, tf32=      None, memgb=  8,  membw= 448, tdp=215),
+    'RTX-2080-Super':  dict(fp16= 89.210880, fp32=11.151360, fp64= 0.348480, tf32=      None, memgb=  8,  membw= 496, tdp=250),
+    'RTX-2080-Ti':     dict(fp16=107.581440, fp32=13.447680, fp64= 0.420240, tf32=      None, memgb= 11,  membw= 616, tdp=250),
     'TITAN-RTX':       dict(fp16=130.498560, fp32=16.312320, fp64= 0.509760, tf32=      None, memgb= 24,  membw= 672, tdp=280),
+    'T4':              dict(fp16= 65.126400, fp32= 8.140800, fp64= 0.254400, tf32=      None, memgb= 16,  membw= 300, tdp= 70),
     'RTX8000':         dict(fp16=130.498560, fp32=16.312320, fp64= 0.509760, tf32=      None, memgb= 48,  membw= 672, tdp=260),
     'A100-PCIe-40GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 40,  membw=1555, tdp=250),
     'A100-PCIe-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=250),
