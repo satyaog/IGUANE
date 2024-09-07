@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import datetime
 import glob, re
 import json
 import sys
@@ -166,32 +167,32 @@ def fom(f):
 #                (Il n'y a aucun agrément sur les specs exacts du NVL sur Internet. C'est ludique.)
 #
 
-RAWDATA = {            #             TFLOPS          TFLOPS          TFLOPS           TFLOPS         GB         GB/s        W
-    'K80':             dict(fp16=      None, fp32= 4.368000, fp64= 1.456000, tf32=      None, memgb= 12,  membw= 240, tdp=150),
-    'M40':             dict(fp16=      None, fp32= 6.844416, fp64= 0.213888, tf32=      None, memgb= 12,  membw= 288, tdp=250),
-    'P100-PCIe-12GB':  dict(fp16= 18.679808, fp32= 9.339904, fp64= 4.669952, tf32=      None, memgb= 12,  membw= 549, tdp=250),
-    'P100-PCIe-16GB':  dict(fp16= 18.679808, fp32= 9.339904, fp64= 4.669952, tf32=      None, memgb= 16,  membw= 732, tdp=250),
-    'P100-SXM2-16GB':  dict(fp16= 21.217280, fp32=10.608640, fp64= 5.304320, tf32=      None, memgb= 16,  membw= 732, tdp=300),
-    'V100-PCIe-16GB':  dict(fp16=112.230400, fp32=14.028800, fp64= 7.014400, tf32=      None, memgb= 16,  membw= 900, tdp=250),
-    'V100-PCIe-32GB':  dict(fp16=112.230400, fp32=14.028800, fp64= 7.014400, tf32=      None, memgb= 32,  membw= 900, tdp=250),
-    'V100-SXM2-16GB':  dict(fp16=125.337600, fp32=15.667200, fp64= 7.833600, tf32=      None, memgb= 16,  membw= 900, tdp=300),
-    'V100-SXM2-32GB':  dict(fp16=125.337600, fp32=15.667200, fp64= 7.833600, tf32=      None, memgb= 32,  membw= 900, tdp=300),
-    'V100S-PCIe-32GB': dict(fp16=130.826240, fp32=16.353280, fp64= 8.176640, tf32=      None, memgb= 32,  membw=1134, tdp=250),
-    'RTX-2080':        dict(fp16= 80.547840, fp32=10.068480, fp64= 0.314640, tf32=      None, memgb=  8,  membw= 448, tdp=215),
-    'RTX-2080-Super':  dict(fp16= 89.210880, fp32=11.151360, fp64= 0.348480, tf32=      None, memgb=  8,  membw= 496, tdp=250),
-    'RTX-2080-Ti':     dict(fp16=107.581440, fp32=13.447680, fp64= 0.420240, tf32=      None, memgb= 11,  membw= 616, tdp=250),
-    'TITAN-RTX':       dict(fp16=130.498560, fp32=16.312320, fp64= 0.509760, tf32=      None, memgb= 24,  membw= 672, tdp=280),
-    'T4':              dict(fp16= 65.126400, fp32= 8.140800, fp64= 0.254400, tf32=      None, memgb= 16,  membw= 300, tdp= 70),
-    'RTX8000':         dict(fp16=130.498560, fp32=16.312320, fp64= 0.509760, tf32=      None, memgb= 48,  membw= 672, tdp=260),
-    'A100-PCIe-40GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 40,  membw=1555, tdp=250),
-    'A100-PCIe-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=250),
-    'A100-SXM4-40GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 40,  membw=1555, tdp=400),
-    'A100-SXM4-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=400),
-    'A6000':           dict(fp16=154.828800, fp32=38.707200, fp64= 0.604800, tf32= 77.414400, memgb= 48,  membw= 768, tdp=300),
-    'L40S':            dict(fp16=366.428160, fp32=91.607040, fp64= 1.431360, tf32=183.214080, memgb= 48,  membw= 864, tdp=350),
-    'H100-PCIe-80GB':  dict(fp16=756.449280, fp32=51.217920, fp64=25.608960, tf32=378.224640, memgb= 80,  membw=2039, tdp=350),
-    'H100-SXM5-80GB':  dict(fp16=989.429760, fp32=66.908160, fp64=33.454080, tf32=494.714880, memgb= 80,  membw=3352, tdp=700),
-    'H100-NVL-94GB':   dict(fp16=835.500000, fp32=60.000000, fp64=30.000000, tf32=417.250000, memgb= 94,  membw=3938, tdp=400),
+RAWDATA = {            #             TFLOPS          TFLOPS          TFLOPS           TFLOPS         GB         GB/s        W          Release Date
+    'K80':             dict(fp16=      None, fp32= 4.368000, fp64= 1.456000, tf32=      None, memgb= 12,  membw= 240, tdp=150, reldate="2014-11-17"),
+    'M40':             dict(fp16=      None, fp32= 6.844416, fp64= 0.213888, tf32=      None, memgb= 12,  membw= 288, tdp=250, reldate="2015-11-10"),
+    'P100-PCIe-12GB':  dict(fp16= 18.679808, fp32= 9.339904, fp64= 4.669952, tf32=      None, memgb= 12,  membw= 549, tdp=250, reldate="2016-06-20"),
+    'P100-PCIe-16GB':  dict(fp16= 18.679808, fp32= 9.339904, fp64= 4.669952, tf32=      None, memgb= 16,  membw= 732, tdp=250, reldate="2016-06-20"),
+    'P100-SXM2-16GB':  dict(fp16= 21.217280, fp32=10.608640, fp64= 5.304320, tf32=      None, memgb= 16,  membw= 732, tdp=300, reldate="2016-04-05"),
+    'V100-PCIe-16GB':  dict(fp16=112.230400, fp32=14.028800, fp64= 7.014400, tf32=      None, memgb= 16,  membw= 900, tdp=250, reldate="2017-06-21"),
+    'V100-PCIe-32GB':  dict(fp16=112.230400, fp32=14.028800, fp64= 7.014400, tf32=      None, memgb= 32,  membw= 900, tdp=250, reldate="2018-03-27"),
+    'V100-SXM2-16GB':  dict(fp16=125.337600, fp32=15.667200, fp64= 7.833600, tf32=      None, memgb= 16,  membw= 900, tdp=300, reldate="2017-05-10"),
+    'V100-SXM2-32GB':  dict(fp16=125.337600, fp32=15.667200, fp64= 7.833600, tf32=      None, memgb= 32,  membw= 900, tdp=300, reldate="2018-03-27"),
+    'V100S-PCIe-32GB': dict(fp16=130.826240, fp32=16.353280, fp64= 8.176640, tf32=      None, memgb= 32,  membw=1134, tdp=250, reldate="2019-11-26"),
+    'RTX-2080':        dict(fp16= 80.547840, fp32=10.068480, fp64= 0.314640, tf32=      None, memgb=  8,  membw= 448, tdp=215, reldate="2018-09-20"),
+    'RTX-2080-Super':  dict(fp16= 89.210880, fp32=11.151360, fp64= 0.348480, tf32=      None, memgb=  8,  membw= 496, tdp=250, reldate="2019-07-23"),
+    'RTX-2080-Ti':     dict(fp16=107.581440, fp32=13.447680, fp64= 0.420240, tf32=      None, memgb= 11,  membw= 616, tdp=250, reldate="2018-09-27"),
+    'TITAN-RTX':       dict(fp16=130.498560, fp32=16.312320, fp64= 0.509760, tf32=      None, memgb= 24,  membw= 672, tdp=280, reldate="2018-12-18"),
+    'T4':              dict(fp16= 65.126400, fp32= 8.140800, fp64= 0.254400, tf32=      None, memgb= 16,  membw= 300, tdp= 70, reldate="2018-09-12"),
+    'RTX8000':         dict(fp16=130.498560, fp32=16.312320, fp64= 0.509760, tf32=      None, memgb= 48,  membw= 672, tdp=260, reldate="2018-08-13"),
+    'A100-PCIe-40GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 40,  membw=1555, tdp=250, reldate="2020-05-14"),
+    'A100-PCIe-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=250, reldate="2021-06-28"),
+    'A100-SXM4-40GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 40,  membw=1555, tdp=400, reldate="2020-05-14"),
+    'A100-SXM4-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=400, reldate="2020-11-16"),
+    'A6000':           dict(fp16=154.828800, fp32=38.707200, fp64= 0.604800, tf32= 77.414400, memgb= 48,  membw= 768, tdp=300, reldate="2020-10-05"),
+    'L40S':            dict(fp16=366.428160, fp32=91.607040, fp64= 1.431360, tf32=183.214080, memgb= 48,  membw= 864, tdp=350, reldate="2023-08-08"),
+    'H100-PCIe-80GB':  dict(fp16=756.449280, fp32=51.217920, fp64=25.608960, tf32=378.224640, memgb= 80,  membw=2039, tdp=350, reldate="2022-03-22"),
+    'H100-SXM5-80GB':  dict(fp16=989.429760, fp32=66.908160, fp64=33.454080, tf32=494.714880, memgb= 80,  membw=3352, tdp=700, reldate="2022-03-22"),
+    'H100-NVL-94GB':   dict(fp16=835.500000, fp32=60.000000, fp64=30.000000, tf32=417.250000, memgb= 94,  membw=3938, tdp=400, reldate="2023-03-21"),
 }
 
 
@@ -262,6 +263,8 @@ if __name__ == "__main__":
                       help="List known UGR/RGU versions")
     argp.add_argument('--list-gpus', '-l', action='store_true',
                       help="List known GPUs")
+    argp.add_argument('--dump-raw',        action='store_true',
+                      help="Dump raw data")
     argp.add_argument('--input', '-i', type=pathlib.Path, default=None,
                       help="Input JSON file")
     argp.add_argument('--gpu',  '-G', type=str, default=None,
@@ -327,6 +330,8 @@ if __name__ == "__main__":
         else:
             for k in ugr_versions.keys():
                 print(k) # Only print name, not weights data
+    elif args.dump_raw:
+        print(json.dumps(RAWDATA, indent=2))
     elif args.input:
         with open(args.input) as f:
             CLUSTER = json.load(f)
