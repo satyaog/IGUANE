@@ -85,13 +85,19 @@ def fom(f):
 #                       FP16: 1410e6*432*(8*4*8)*2/1e12 = 311.86944 TFLOPS (432 Tensor Cores contracting 8x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
 #                       TF32: 1410e6*432*(8*4*4)*2/1e12 = 155.93472 TFLOPS (432 Tensor Cores contracting 8x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
 #
+# https://nvdam.widen.net/s/wrqrqt75vh/nvidia-rtx-a5000-datasheet
 # https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/proviz-print-nvidia-rtx-a6000-datasheet-us-nvidia-1454980-r9-web%20(1).pdf
 # https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf
-#     A6000: Die GA102, fully enabled (84 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1800 MHz
-#            FP32: 1800e6*10752*2/1e12       =  38.7072 TFLOPS (1 FP32 FMA per CUDA Core)
-#            FP64: 1800e6*84*2*2/1e12        =   0.6048 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
-#            FP16: 1800e6*336*(4*4*8)*2/1e12 = 154.8288 TFLOPS (336 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
-#            FP16: 1800e6*336*(4*4*4)*2/1e12 =  77.4144 TFLOPS (336 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     A5000: Die GA102-850-A1, 76.2% enabled (64 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1695 MHz
+#            FP32: 1695e6*8192*2/1e12        =  27.77088 TFLOPS (1 FP32 FMA per CUDA Core)
+#            FP64: 1695e6*64*2*2/1e12        =   0.43392 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
+#            FP16: 1695e6*256*(4*4*8)*2/1e12 = 111.08352 TFLOPS (256 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#            FP16: 1695e6*256*(4*4*4)*2/1e12 =  55.54176 TFLOPS (256 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     A6000: Die GA102-875-A1, fully enabled (84 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1800 MHz
+#            FP32: 1800e6*10752*2/1e12       =  38.7072  TFLOPS (1 FP32 FMA per CUDA Core)
+#            FP64: 1800e6*84*2*2/1e12        =   0.6048  TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
+#            FP16: 1800e6*336*(4*4*8)*2/1e12 = 154.8288  TFLOPS (336 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#            FP16: 1800e6*336*(4*4*4)*2/1e12 =  77.4144  TFLOPS (336 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
 #
 # https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/quadro-rtx-8000-us-nvidia-946977-r1-web.pdf
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf
@@ -188,6 +194,7 @@ RAWDATA = {            #             TFLOPS          TFLOPS          TFLOPS     
     'A100-PCIe-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=250, reldate="2021-06-28"),
     'A100-SXM4-40GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 40,  membw=1555, tdp=400, reldate="2020-05-14"),
     'A100-SXM4-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=400, reldate="2020-11-16"),
+    'A5000':           dict(fp16=111.083520, fp32=27.770880, fp64= 0.433920, tf32= 55.541760, memgb= 24,  membw= 768, tdp=230, reldate="2021-04-12"),
     'A6000':           dict(fp16=154.828800, fp32=38.707200, fp64= 0.604800, tf32= 77.414400, memgb= 48,  membw= 768, tdp=300, reldate="2020-10-05"),
     'L40S':            dict(fp16=366.428160, fp32=91.607040, fp64= 1.431360, tf32=183.214080, memgb= 48,  membw= 864, tdp=350, reldate="2023-08-08"),
     'H100-PCIe-80GB':  dict(fp16=756.449280, fp32=51.217920, fp64=25.608960, tf32=378.224640, memgb= 80,  membw=2039, tdp=350, reldate="2022-03-22"),
