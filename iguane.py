@@ -128,19 +128,39 @@ def fom(f):
 #
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/technologies/NVIDIA-ADA-GPU-PROVIZ-Architecture-Whitepaper_1.1.pdf
 # https://resources.nvidia.com/en-us-l40s/l40s-datasheet-28413
-#     L40S: Die AD102, 98.6% enabled (142 SMs x 4 = 568 4th-gen Tensor Cores) @ Boost Clock 2520 MHz
-#           L40S datasheet is internally inconsistent:
-#             - FP16/BF16 @ 0% sparsity are computed as 362.50 but that is not 50% of 733.
-#               - 50% of 733 is 366.50 and:
-#                 - "366" is the declared TF32 with 50% sparsity
-#                 - 366/2 = 183 is the declared peak TF32 with 0% sparsity
-#                 - 91.6*2 = ~183 and 91.6 is the declared FP32 performance
-#                 - 733 is the declared peak FP8/INT8/INT4 @ 0% sparsity
-#                 - 733*2 = 1466 is the declared peak FP8/INT8/INT4 @ 50% sparsity
-#           FP32: 2520e6*18176*2/1e12       =  91.60704 TFLOPS (1 FP32 FMA per CUDA Core)
-#           FP64: 2520e6*142*2*2/1e12       =   1.43136 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32, verified empirically)
-#           FP16: 2520e6*568*(4*4*8)*2/1e12 = 366.42816 TFLOPS (568 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
-#           TF32: 2520e6*568*(4*4*4)*2/1e12 = 183.21408 TFLOPS (568 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     L40S:            Die AD102-895, 98.6% enabled (142 SMs x 4 = 568 4th-gen Tensor Cores) @ Boost Clock 2520 MHz
+#                      L40S datasheet is internally inconsistent:
+#                        - FP16/BF16 @ 0% sparsity are computed as 362.50 but that is not 50% of 733.
+#                          - 50% of 733 is 366.50 and:
+#                            - "366" is the declared TF32 with 50% sparsity
+#                            - 366/2 = 183 is the declared peak TF32 with 0% sparsity
+#                            - 91.6*2 = ~183 and 91.6 is the declared FP32 performance
+#                            - 733 is the declared peak FP8/INT8/INT4 @ 0% sparsity
+#                            - 733*2 = 1466 is the declared peak FP8/INT8/INT4 @ 50% sparsity
+#                      FP32: 2520e6*18176*2/1e12       =  91.60704 TFLOPS (1 FP32 FMA per CUDA Core)
+#                      FP64: 2520e6*142*2*2/1e12       =   1.43136 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32, verified empirically)
+#                      FP16: 2520e6*568*(4*4*8)*2/1e12 = 366.42816 TFLOPS (568 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#                      TF32: 2520e6*568*(4*4*4)*2/1e12 = 183.21408 TFLOPS (568 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     RTX-4080:        Die AD103-300, 95.0% enabled (76 SMs x 4 = 304 4th-gen Tensor Cores) @ Boost Clock 2505 Mhz
+#                      FP32: 2505e6*9728*2/1e12        =  48.73728 TFLOPS (1 FP32 FMA per CUDA Core)
+#                      FP64: 2505e6*76*2*2/1e12        =   0.76152 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32, verified empirically)
+#                      FP16: 2505e6*304*(4*4*8)*2/1e12 = 194.94912 TFLOPS (304 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#                      TF32: 2505e6*304*(4*4*4)*2/1e12 =  97.47456 TFLOPS (304 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     RTX-4080-Super:  Die AD103-400, fully-enabled (80 SMs x 4 = 320 4th-gen Tensor Cores) @ Boost Clock 2550 Mhz
+#                      FP32: 2550e6*10240*2/1e12       =  52.224   TFLOPS (1 FP32 FMA per CUDA Core)
+#                      FP64: 2550e6*80*2*2/1e12        =   0.816   TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32, verified empirically)
+#                      FP16: 2550e6*320*(4*4*8)*2/1e12 = 208.896   TFLOPS (320 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#                      TF32: 2550e6*320*(4*4*4)*2/1e12 = 104.448   TFLOPS (320 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     RTX-4090-Laptop: Die AD103 GN21-X11, 95.0% enabled (76 SMs x 4 = 304 4th-gen Tensor Cores) @ Boost Clock 2580 Mhz
+#                      FP32: 2580e6*9728*2/1e12        =  50.19648 TFLOPS (1 FP32 FMA per CUDA Core)
+#                      FP64: 2580e6*76*2*2/1e12        =   0.78432 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32, verified empirically)
+#                      FP16: 2580e6*304*(4*4*8)*2/1e12 = 200.78592 TFLOPS (304 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#                      TF32: 2580e6*304*(4*4*4)*2/1e12 = 100.39296 TFLOPS (304 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     RTX-4090:        Die AD102-300, 88.8% enabled (128 SMs x 4 = 512 4th-gen Tensor Cores) @ Boost Clock 2520 MHz
+#                      FP32: 2520e6*16384*2/1e12       =  82.57536 TFLOPS (1 FP32 FMA per CUDA Core)
+#                      FP64: 2520e6*128*2*2/1e12       =   1.29024 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32, verified empirically)
+#                      FP16: 2520e6*512*(4*4*8)*2/1e12 = 330.30144 TFLOPS (512 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#                      TF32: 2520e6*512*(4*4*4)*2/1e12 = 165.15072 TFLOPS (512 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
 #
 # https://resources.nvidia.com/en-us-tensor-core
 # https://www.nvidia.com/en-us/data-center/h100/
@@ -196,6 +216,10 @@ RAWDATA = {            #             TFLOPS          TFLOPS          TFLOPS     
     'A100-SXM4-80GB':  dict(fp16=311.869440, fp32=19.491840, fp64= 9.745920, tf32=155.934720, memgb= 80,  membw=1555, tdp=400, reldate="2020-11-16"),
     'A5000':           dict(fp16=111.083520, fp32=27.770880, fp64= 0.433920, tf32= 55.541760, memgb= 24,  membw= 768, tdp=230, reldate="2021-04-12"),
     'A6000':           dict(fp16=154.828800, fp32=38.707200, fp64= 0.604800, tf32= 77.414400, memgb= 48,  membw= 768, tdp=300, reldate="2020-10-05"),
+    'RTX-4080':        dict(fp16=194.949120, fp32=48.737280, fp64= 0.761520, tf32= 97.474560, memgb= 16,  membw= 717, tdp=320, reldate="2022-11-16"),
+    'RTX-4080-Super':  dict(fp16=208.896000, fp32=52.224000, fp64= 0.816000, tf32=104.448000, memgb= 16,  membw= 736, tdp=425, reldate="2024-01-31"),
+    'RTX-4090-Laptop': dict(fp16=200.785920, fp32=50.196480, fp64= 0.784320, tf32=100.392960, memgb= 16,  membw= 576, tdp=150, reldate="2023-02-08"),
+    'RTX-4090':        dict(fp16=330.301440, fp32=82.575360, fp64= 1.290240, tf32=165.150720, memgb= 24,  membw=1008, tdp=450, reldate="2022-10-12"),
     'L40S':            dict(fp16=366.428160, fp32=91.607040, fp64= 1.431360, tf32=183.214080, memgb= 48,  membw= 864, tdp=350, reldate="2023-08-08"),
     'H100-PCIe-80GB':  dict(fp16=756.449280, fp32=51.217920, fp64=25.608960, tf32=378.224640, memgb= 80,  membw=2039, tdp=350, reldate="2022-03-22"),
     'H100-SXM5-80GB':  dict(fp16=989.429760, fp32=66.908160, fp64=33.454080, tf32=494.714880, memgb= 80,  membw=3352, tdp=700, reldate="2022-03-22"),
