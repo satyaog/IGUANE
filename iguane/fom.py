@@ -115,4 +115,3 @@ def fom_custom_weights(name, *, args=None):
         _sum += ratio
         logger.debug(f"{k}\t{ratio:.4f}\t{name}")
     return _sum
-
