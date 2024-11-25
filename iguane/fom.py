@@ -13,7 +13,8 @@ from iguane.log import logger
 RAWDATA = tomllib.loads(importlib.resources.read_text('iguane', 'rawdata.toml'))
 FIELDS = [
     k for k, v in RAWDATA["K80"].items()
-    if isinstance(v, (int, float))
+    # bool is redundant and is interpreted as an int but it is clearer this way
+    if isinstance(v, (bool, int, float))
 ]
 
 FOM_VERSIONS = {
