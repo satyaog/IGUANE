@@ -25,7 +25,7 @@ if __name__ == "__main__":
                       help="Sort GPU listing by unit")
     argp.add_argument('--list-units',      action='store_true',
                       help="List known Units")
-    argp.add_argument('--list-fom-versions', '--list-rgu-versions',
+    argp.add_argument('--list-fom-versions',
                       action='store_true',
                       help="List known FOM versions")
     argp.add_argument('--list-gpus', '-l', action='store_true',
