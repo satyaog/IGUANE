@@ -6,7 +6,7 @@ import glob, re
 import json
 import sys
 from iguane.log import logger
-from iguane.fom import _CURRENT_FOM_VERSION, FIELDS, UGR_VERSIONS, RAWDATA, FOM, FOM_VERSIONS_WEIGHTS
+from iguane.fom import _CURRENT_FOM_VERSION, FIELDS, RAWDATA, FOM, FOM_VERSIONS
 
 
 def matchgpu(name, pat):
@@ -25,9 +25,9 @@ if __name__ == "__main__":
                       help="Sort GPU listing by unit")
     argp.add_argument('--list-units',      action='store_true',
                       help="List known Units")
-    argp.add_argument('--list-ugr-versions', '--list-rgu-versions',
+    argp.add_argument('--list-fom-versions', '--list-rgu-versions',
                       action='store_true',
-                      help="List known UGR/RGU versions")
+                      help="List known FOM versions")
     argp.add_argument('--list-gpus', '-l', action='store_true',
                       help="List known GPUs")
     argp.add_argument('--dump-raw',        action='store_true',
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     umtx.add_argument('--rgu',     action='store_const', dest='unit', const='ugr',
                       help="Select UGR/RGU unit-equivalence")
     ugrp.add_argument('--fom-version', type=str, default=_CURRENT_FOM_VERSION,
-                      choices=FOM_VERSIONS_WEIGHTS.keys(),
+                      choices=FOM_VERSIONS.keys(),
                       help="Select Figure-of-Merit ponderation version")
     ugrp.add_argument('--custom-weights', type=str,
                       help='Use custom weights in the form \'{"ref": "GPU", ' + ', '.join(f'"{f}": 0.0' for f in FIELDS) + '}\'')
@@ -96,15 +96,15 @@ if __name__ == "__main__":
         else:
             for k in gpus:
                 print(k)
-    elif args.list_ugr_versions:
-        ugr_versions = UGR_VERSIONS.keys()
+    elif args.list_fom_versions:
+        fom_versions = FOM_VERSIONS.keys()
         if args.reverse:
-            ugr_versions = reversed(ugr_versions)
-        ugr_versions = {k:UGR_VERSIONS[k] for k in ugr_versions}
+            fom_versions = reversed(fom_versions)
+        fom_versions = {k:FOM_VERSIONS[k] for k in fom_versions}
         if args.json:
-            print(json.dumps(ugr_versions, indent=2))
+            print(json.dumps(fom_versions, indent=2))
         else:
-            for k in ugr_versions.keys():
+            for k in fom_versions.keys():
                 print(k) # Only print name, not weights data
     elif args.dump_raw:
         print(json.dumps(RAWDATA, indent=2))

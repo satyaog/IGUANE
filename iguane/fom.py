@@ -16,7 +16,7 @@ FIELDS = [
     if isinstance(v, (int, float))
 ]
 
-FOM_VERSIONS_WEIGHTS = {
+FOM_VERSIONS = {
     # v1.0 is equivalent to RGU
     # https://docs.alliancecan.ca/wiki/Allocations_and_compute_scheduling
     '1.0':    { 'ref': 'A100-SXM4-40GB', 'fp16': 1.6, 'fp32': 1.6,              'memgb': 0.8                 },
@@ -27,16 +27,9 @@ FOM_VERSIONS_WEIGHTS = {
 
 _CURRENT_FOM_VERSION = list(
     reversed(
-        sorted((k for k in FOM_VERSIONS_WEIGHTS.keys() if k.replace(".", "").isdigit()))
+        sorted((k for k in FOM_VERSIONS.keys() if k.replace(".", "").isdigit()))
     )
 )[0]
-
-UGR_VERSIONS = {
-    # v1.0 is equivalent to UGR
-    # https://docs.alliancecan.ca/wiki/Allocations_and_compute_scheduling
-    '1.0':        { 'fp16': 1.6, 'fp32': 1.6, 'memgb': 0.8 },
-    '1.0-renorm': { 'fp16': 0.4, 'fp32': 0.4, 'memgb': 0.2 },
-}
 
 
 def fom(f):
@@ -96,7 +89,7 @@ def fom_fom_version(name, *, args=None):
 @fom
 def fom_custom_weights(name, *, args=None):
     fom_version = args.fom_version if args else _CURRENT_FOM_VERSION
-    weights = args.custom_weights if args and args.custom_weights else FOM_VERSIONS_WEIGHTS[fom_version].copy()
+    weights = args.custom_weights if args and args.custom_weights else FOM_VERSIONS[fom_version].copy()
     if isinstance(weights, str):
         weights = json.loads(weights)
 
