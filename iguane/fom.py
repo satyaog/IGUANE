@@ -1,23 +1,36 @@
+import copy
 import importlib.resources
 import json
-import re
 try:
     import tomllib
 except ModuleNotFoundError:
     # for Python before 3.11
     import pip._vendor.tomli as tomllib
 
+from iguane.log import logger
 
 # Import RAWDATA (a dictionary mapping GPU name to GPU flops and data) from a resource file
-RAWDATA = tomllib.loads(importlib.resources.read_text("iguane", "rawdata.toml"))
+RAWDATA = tomllib.loads(importlib.resources.read_text('iguane', 'rawdata.toml'))
+FIELDS = [
+    k for k, v in RAWDATA["K80"].items()
+    # bool is redundant and is interpreted as an int but it is clearer this way
+    if isinstance(v, (bool, int, float))
+]
 
-
-UGR_VERSIONS = {
-    # v1.0 is equivalent to UGR
+FOM_VERSIONS = {
+    # v1.0 is equivalent to RGU
     # https://docs.alliancecan.ca/wiki/Allocations_and_compute_scheduling
-    "1.0":        { 'fp16': 1.6, 'fp32': 1.6, 'memgb': 0.8 },
-    "1.0-renorm": { 'fp16': 0.4, 'fp32': 0.4, 'memgb': 0.2 },
+    '1.0':    { 'ref': 'A100-SXM4-40GB', 'fp16': 1.6, 'fp32': 1.6,              'memgb': 0.8                 },
+    'ugr':    { 'ref': 'A100-SXM4-40GB', 'fp16': 1.6, 'fp32': 1.6,              'memgb': 0.8                 },
+    '2.0-0':  { 'ref': 'A100-SXM4-80GB', 'fp16': 0.2, 'fp32': 0.1, 'tf32': 0.2, 'memgb': 0.25, 'membw': 0.25 },
+    'iguane': { 'ref': 'A100-SXM4-80GB', 'fp16': 0.2, 'fp32': 0.2, 'tf32': 0.2, 'memgb': 0.2,  'membw': 0.2  },
 }
+
+_CURRENT_FOM_VERSION = list(
+    reversed(
+        sorted((k for k in FOM_VERSIONS.keys() if k.replace(".", "").isdigit()))
+    )
+)[0]
 
 
 def fom(f):
@@ -26,7 +39,6 @@ def fom(f):
            'Figure-of-Merit function names must start with "fom_"!'
     FOM[f.__name__[4:]] = f
     return f
-
 
 
 @fom
@@ -58,27 +70,42 @@ def fom_tf32(name, *, args=None):
 
 @fom
 def fom_ugr(name, *, args=None):
-    weights = UGR_VERSIONS[args.ugr_version if args else "1.0"]
-    ref  = RAWDATA['A100-SXM4-40GB']
-    data = RAWDATA[name].copy()
-    data['tf32'] = data['tf32'] or data['fp32']
-    data['fp16'] = data['fp16'] or data['fp32']
-    return sum([w * (data[k] / ref[k]) for k, w in weights.items()])
+    args = copy.copy(args)
+    args.fom_version = 'ugr'
+    return fom_fom_version(name, args=args)
 
 
 @fom
 def fom_iguane(name, *, args=None):
-    ref  = RAWDATA['A100-SXM4-80GB']
+    args = copy.copy(args)
+    args.fom_version = 'iguane'
+    return fom_fom_version(name, args=args)
+
+
+@fom
+def fom_fom_version(name, *, args=None):
+    return fom_custom_weights(name, args=args)
+
+
+@fom
+def fom_custom_weights(name, *, args=None):
+    fom_version = args.fom_version if args else _CURRENT_FOM_VERSION
+    weights = args.custom_weights if args and args.custom_weights else FOM_VERSIONS[fom_version].copy()
+    if isinstance(weights, str):
+        weights = json.loads(weights)
+
+    ref  = RAWDATA[weights.pop('ref')]
     data = RAWDATA[name].copy()
     data['tf32'] = data['tf32'] or data['fp32']
     data['fp16'] = data['fp16'] or data['fp32']
-    weight_fp16  = 0.2
-    weight_fp32  = 0.2
-    weight_tf32  = 0.2
-    weight_memgb = 0.2
-    weight_membw = 0.2
-    return weight_fp16  * (data['fp16']  / ref['fp16'])  + \
-           weight_fp32  * (data['fp32']  / ref['fp32'])  + \
-           weight_tf32  * (data['tf32']  / ref['tf32'])  + \
-           weight_memgb * (data['memgb'] / ref['memgb']) + \
-           weight_membw * (data['membw'] / ref['membw'])
+
+    if args.norm:
+        _sum = sum(weights.values())
+        weights = {k: v / _sum for k, v in weights.items()}
+
+    _sum = 0
+    for k, w in weights.items():
+        ratio = w * data[k] / ref[k]
+        _sum += ratio
+        logger.debug(f"{k}\t{ratio:.4f}\t{name}")
+    return _sum

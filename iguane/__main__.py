@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import argparse
+import logging
+import pathlib
 import glob, re
 import json
 import sys
-import pathlib
-from iguane.fom import UGR_VERSIONS, RAWDATA, FOM
+from iguane.log import logger
+from iguane.fom import _CURRENT_FOM_VERSION, FIELDS, RAWDATA, FOM, FOM_VERSIONS
 
 
 def matchgpu(name, pat):
@@ -23,9 +25,9 @@ if __name__ == "__main__":
                       help="Sort GPU listing by unit")
     argp.add_argument('--list-units',      action='store_true',
                       help="List known Units")
-    argp.add_argument('--list-ugr-versions', '--list-rgu-versions',
+    argp.add_argument('--list-fom-versions',
                       action='store_true',
-                      help="List known UGR/RGU versions")
+                      help="List known FOM versions")
     argp.add_argument('--list-gpus', '-l', action='store_true',
                       help="List known GPUs")
     argp.add_argument('--dump-raw',        action='store_true',
@@ -34,6 +36,8 @@ if __name__ == "__main__":
                       help="Input JSON file")
     argp.add_argument('--gpu',  '-G', type=str, default=None,
                       help="Selected GPU")
+    argp.add_argument('--verbose', '-v',   action='count', default=0,
+                      help="Increase verbosity level")
 
     ogrp = argp.add_argument_group('OUTPUT FORMAT', 'Output format control')
     ogrp.add_argument('--delimiter', '-d', type=str, default=',',
@@ -45,6 +49,8 @@ if __name__ == "__main__":
                       help="Dump output as delimited text")
 
     ugrp = argp.add_argument_group('UNITS', 'Unit/FoM selection')
+    ugrp.add_argument('--norm',            action='store_true',
+                      help="Normalize the weights to 1.0")
     umtx = ugrp.add_mutually_exclusive_group()
     umtx.add_argument('--unit', '-u', '--fom', type=str.lower, default='ugr',
                       choices=sorted(set(FOM.keys()) | {'iguana', 'rgu'}),
@@ -57,14 +63,19 @@ if __name__ == "__main__":
                       help="Select UGR/RGU unit-equivalence")
     umtx.add_argument('--rgu',     action='store_const', dest='unit', const='ugr',
                       help="Select UGR/RGU unit-equivalence")
-    ugrp.add_argument('--ugr-version', type=str, default='1.0',
-                      choices=UGR_VERSIONS.keys(),
-                      help="Select UGR ponderation version")
+    ugrp.add_argument('--fom-version', type=str, default=_CURRENT_FOM_VERSION,
+                      choices=FOM_VERSIONS.keys(),
+                      help="Select Figure-of-Merit ponderation version")
+    ugrp.add_argument('--custom-weights', type=str,
+                      help='Use custom weights in the form \'{"ref": "GPU", ' + ', '.join(f'"{f}": 0.0' for f in FIELDS) + '}\'')
 
     # Parse Arguments
     args = argp.parse_args(sys.argv[1:])
     args.unit = {'iguana': 'iguane', 'rgu': 'ugr'}.get(args.unit, args.unit)
-
+    if args.fom_version:
+        args.unit = "fom_version"
+    if args.verbose:
+        logger.setLevel(logging.CRITICAL - (args.verbose - 1) * 10)
 
     if   args.list_units:
         units = list(FOM.keys())
@@ -85,15 +96,15 @@ if __name__ == "__main__":
         else:
             for k in gpus:
                 print(k)
-    elif args.list_ugr_versions:
-        ugr_versions = UGR_VERSIONS.keys()
+    elif args.list_fom_versions:
+        fom_versions = FOM_VERSIONS.keys()
         if args.reverse:
-            ugr_versions = reversed(ugr_versions)
-        ugr_versions = {k:UGR_VERSIONS[k] for k in ugr_versions}
+            fom_versions = reversed(fom_versions)
+        fom_versions = {k:FOM_VERSIONS[k] for k in fom_versions}
         if args.json:
-            print(json.dumps(ugr_versions, indent=2))
+            print(json.dumps(fom_versions, indent=2))
         else:
-            for k in ugr_versions.keys():
+            for k in fom_versions.keys():
                 print(k) # Only print name, not weights data
     elif args.dump_raw:
         print(json.dumps(RAWDATA, indent=2))
