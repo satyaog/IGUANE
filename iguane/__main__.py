@@ -19,41 +19,40 @@ def matchgpu(name, pat):
 
 if __name__ == "__main__":
     argp = argparse.ArgumentParser()
-    argp.add_argument('--reverse',   '-r', action='store_true',
+    argp.add_argument('--reverse',   '-r',   action='store_true',
                       help="Reverse listing")
-    argp.add_argument('--sort',      '-s', action='store_true',
+    argp.add_argument('--sort',      '-s',   action='store_true',
                       help="Sort GPU listing by unit")
-    argp.add_argument('--list-units',      action='store_true',
+    argp.add_argument('--list-units',        action='store_true',
                       help="List known Units")
-    argp.add_argument('--list-fom-versions',
-                      action='store_true',
+    argp.add_argument('--list-fom-versions', action='store_true',
                       help="List known FOM versions")
-    argp.add_argument('--list-gpus', '-l', action='store_true',
+    argp.add_argument('--list-gpus', '-l',   action='store_true',
                       help="List known GPUs")
-    argp.add_argument('--dump-raw',        action='store_true',
+    argp.add_argument('--dump-raw',          action='store_true',
                       help="Dump raw data")
     argp.add_argument('--input', '-i', type=pathlib.Path, default=None,
                       help="Input JSON file")
     argp.add_argument('--gpu',  '-G', type=str, default=None,
                       help="Selected GPU")
-    argp.add_argument('--verbose', '-v',   action='count', default=0,
+    argp.add_argument('--verbose', '-v',     action='count', default=0,
                       help="Increase verbosity level")
 
     ogrp = argp.add_argument_group('OUTPUT FORMAT', 'Output format control')
     ogrp.add_argument('--delimiter', '-d', type=str, default=',',
                       help="Delimiter for --parsable output")
     omtx = ogrp.add_mutually_exclusive_group()
-    omtx.add_argument('--json',      '-j', action='store_true',
+    omtx.add_argument('--json',      '-j',   action='store_true',
                       help="Dump output as JSON")
-    omtx.add_argument('--parsable',  '-p', action='store_true',
+    omtx.add_argument('--parsable',  '-p',   action='store_true',
                       help="Dump output as delimited text")
 
     ugrp = argp.add_argument_group('UNITS', 'Unit/FoM selection')
-    ugrp.add_argument('--norm',            action='store_true',
+    ugrp.add_argument('--norm',              action='store_true',
                       help="Normalize the weights to 1.0")
     umtx = ugrp.add_mutually_exclusive_group()
     umtx.add_argument('--unit', '-u', '--fom', type=str.lower, default='ugr',
-                      choices=sorted(set(FOM.keys()) | {'iguana', 'rgu'}),
+                      choices=sorted(set(FOM.keys()) | {'iguana', 'iguane', 'rgu'}),
                       help="Select unit-equivalence (FoM) to compute for every GPU")
     umtx.add_argument('--iguane',  action='store_const', dest='unit', const='iguane',
                       help="Select IGUANE/IGUANA unit-equivalence")
@@ -65,15 +64,19 @@ if __name__ == "__main__":
                       help="Select UGR/RGU unit-equivalence")
     ugrp.add_argument('--fom-version', type=str, default=_CURRENT_FOM_VERSION,
                       choices=FOM_VERSIONS.keys(),
-                      help="Select Figure-of-Merit ponderation version")
-    ugrp.add_argument('--custom-weights', type=str,
-                      help='Use custom weights in the form \'{"ref": "GPU", ' + ', '.join(f'"{f}": 0.0' for f in FIELDS) + '}\'')
+                      help=f'Select Figure-of-Merit ponderation version (default: {_CURRENT_FOM_VERSION})')
+    ugrp.add_argument('--custom-weights', type=json.loads, default='null',
+                      help='Use custom weights in the JSON form \'{"ref": "GPU", ' + ', '.join(f'"{f}": 0.0' for f in FIELDS) + '}\'')
 
     # Parse Arguments
     args = argp.parse_args(sys.argv[1:])
-    args.unit = {'iguana': 'iguane', 'rgu': 'ugr'}.get(args.unit, args.unit)
-    if args.fom_version:
-        args.unit = "fom_version"
+    if args.unit in {'iguana', 'iguane'}:
+        args.unit           = 'ugr'
+        args.fom_version    = 'iguane'
+        args.custom_weights = None
+    elif args.unit in {'rgu', 'ugr'}:
+        args.unit = 'ugr'
+
     if args.verbose:
         logger.setLevel(logging.CRITICAL - (args.verbose - 1) * 10)
 
