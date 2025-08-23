@@ -56,29 +56,6 @@
 #                 FP64: 1597e6*5120*2*0.5/1e12    =   8.17664 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
 #                 FP16: 1597e6*640*(4*4*4)*2/1e12 = 130.82624 TFLOPS (640 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
 #
-# https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet.pdf
-# https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf
-# https://arxiv.org/pdf/2208.11174
-#     A100 PCIe & SXM4: Die GA100 (PCIe 40GB: GA100-883AA-A1), 84.375% enabled (108 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1410 MHz
-#                       FP32: 1410e6*6912*2/1e12        =  19.49184 TFLOPS (1 FP32 FMA per CUDA Core)
-#                       FP64: 1410e6*6912*2*0.5/1e12    =   9.74592 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                       FP16: 1410e6*432*(8*4*8)*2/1e12 = 311.86944 TFLOPS (432 Tensor Cores contracting 8x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
-#                       TF32: 1410e6*432*(8*4*4)*2/1e12 = 155.93472 TFLOPS (432 Tensor Cores contracting 8x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
-#
-# https://nvdam.widen.net/s/wrqrqt75vh/nvidia-rtx-a5000-datasheet
-# https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/proviz-print-nvidia-rtx-a6000-datasheet-us-nvidia-1454980-r9-web%20(1).pdf
-# https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf
-#     A5000: Die GA102-850-A1, 76.2% enabled (64 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1695 MHz
-#            FP32: 1695e6*8192*2/1e12        =  27.77088 TFLOPS (1 FP32 FMA per CUDA Core)
-#            FP64: 1695e6*64*2*2/1e12        =   0.43392 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
-#            FP16: 1695e6*256*(4*4*8)*2/1e12 = 111.08352 TFLOPS (256 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
-#            TF32: 1695e6*256*(4*4*4)*2/1e12 =  55.54176 TFLOPS (256 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
-#     A6000: Die GA102-875-A1, fully enabled (84 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1800 MHz
-#            FP32: 1800e6*10752*2/1e12       =  38.7072  TFLOPS (1 FP32 FMA per CUDA Core)
-#            FP64: 1800e6*84*2*2/1e12        =   0.6048  TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
-#            FP16: 1800e6*336*(4*4*8)*2/1e12 = 154.8288  TFLOPS (336 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
-#            TF32: 1800e6*336*(4*4*4)*2/1e12 =  77.4144  TFLOPS (336 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
-#
 # https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/quadro-rtx-8000-us-nvidia-946977-r1-web.pdf
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf
 # https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-t4/t4-tensor-core-datasheet-951643.pdf
@@ -108,6 +85,29 @@
 #                     FP32: 1770e6*4608*2/1e12          =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
 #                     FP64: 1770e6*72*2*2/1e12          =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
 #                     FP16: 1770e6*576*(4*4*4)*2/1e12   = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
+#
+# https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet.pdf
+# https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf
+# https://arxiv.org/pdf/2208.11174
+#     A100 PCIe & SXM4: Die GA100 (PCIe 40GB: GA100-883AA-A1), 84.375% enabled (108 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1410 MHz
+#                       FP32: 1410e6*6912*2/1e12        =  19.49184 TFLOPS (1 FP32 FMA per CUDA Core)
+#                       FP64: 1410e6*6912*2*0.5/1e12    =   9.74592 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
+#                       FP16: 1410e6*432*(8*4*8)*2/1e12 = 311.86944 TFLOPS (432 Tensor Cores contracting 8x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#                       TF32: 1410e6*432*(8*4*4)*2/1e12 = 155.93472 TFLOPS (432 Tensor Cores contracting 8x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
+#
+# https://nvdam.widen.net/s/wrqrqt75vh/nvidia-rtx-a5000-datasheet
+# https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/proviz-print-nvidia-rtx-a6000-datasheet-us-nvidia-1454980-r9-web%20(1).pdf
+# https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf
+#     A5000: Die GA102-850-A1, 76.2% enabled (64 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1695 MHz
+#            FP32: 1695e6*8192*2/1e12        =  27.77088 TFLOPS (1 FP32 FMA per CUDA Core)
+#            FP64: 1695e6*64*2*2/1e12        =   0.43392 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
+#            FP16: 1695e6*256*(4*4*8)*2/1e12 = 111.08352 TFLOPS (256 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#            TF32: 1695e6*256*(4*4*4)*2/1e12 =  55.54176 TFLOPS (256 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#     A6000: Die GA102-875-A1, fully enabled (84 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1800 MHz
+#            FP32: 1800e6*10752*2/1e12       =  38.7072  TFLOPS (1 FP32 FMA per CUDA Core)
+#            FP64: 1800e6*84*2*2/1e12        =   0.6048  TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
+#            FP16: 1800e6*336*(4*4*8)*2/1e12 = 154.8288  TFLOPS (336 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#            TF32: 1800e6*336*(4*4*4)*2/1e12 =  77.4144  TFLOPS (336 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
 #
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/technologies/NVIDIA-ADA-GPU-PROVIZ-Architecture-Whitepaper_1.1.pdf
 # https://resources.nvidia.com/en-us-l40s/l40s-datasheet-28413
