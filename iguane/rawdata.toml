@@ -199,6 +199,26 @@
 #                TF32: 1545e6*528*(8*4*8)*2/1e12  = 417.66912 TFLOPS (528 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
 #                (Appears to primarily be a memory upgrade of H100 NVL, 80GB HBM3 -> 141GB HBM3e and with higher bandwidth)
 #
+# https://images.nvidia.com/aem-dam/Solutions/geforce/blackwell/nvidia-rtx-blackwell-gpu-architecture.pdf
+# https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/NVIDIA-RTX-Blackwell-PRO-GPU-Architecture-v1.0.pdf
+#     B200 NVL:     Die GB200 (?), 186 GB HBM3e, 8000 GB/s BW, 1200W
+#     B200 HGX:     Die GB200 (?), 180 GB HBM3e, 7700 GB/s BW, 1000W
+#     RTX-PRO-6000-Blackwell-Workstation-Edition: Die GB202, 97.9% enabled (188 SMs x 4 = 752 5th-gen Tensor Cores) @ Boost Clock 2617 MHz, 96 GB GDDR7, 1792 GB/s BW, 600W
+#                   FP32: 2617e6*24064*2/1e12          = 125.950976 TFLOPS (1   FP32 FMA per CUDA Core)
+#                   FP64: 2617e6*188*2*2/1e12          =   1.967984 TFLOPS (2   FP64 FMA ALUs per SM, 1:64 of FP32)
+#                   FP16: 2617e6*752*(4*4*8)*2/1e12    = 503.803904 TFLOPS (752 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#                   TF32: 2617e6*752*(4*4*4)*2/1e12    = 251.901952 TFLOPS (752 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
+#     RTX-5080:     Die GB203, fully enabled (84 SMs x 4 = 336 5th-gen Tensor Cores) @ Boost Clock 2617 MHz, 16 GB GDDR7, 960 GB/s BW, 360W
+#                   FP32: 2617e6*10752*2/1e12          =  56.275968 TFLOPS (1   FP32 FMA per CUDA Core)
+#                   FP64: 2617e6*84*2*2/1e12           =   0.879312 TFLOPS (2   FP64 FMA ALUs per SM, 1:64 of FP32)
+#                   FP16: 2617e6*336*(4*4*8)*2/2/1e12  = 112.551936 TFLOPS (336 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/2 clock cycles @ 0% sparsity)
+#                   TF32: 2617e6*336*(4*4*4)*2/2/1e12  =  56.275968 TFLOPS (336 Tensor Cores contracting 4x4x4 TF32 FMAs/2 clock cycles @ 0% sparsity, 1:2 of FP16)
+#     RTX-5090:     Die GB202, 88.5% enabled (170 SMs x 4 = 680 5th-gen Tensor Cores) @ Boost Clock 2407 MHz, 32 GB GDDR7, 1792 GB/s BW, 575W
+#                   FP32: 2407e6*21760*2/1e12          = 104.75264  TFLOPS (1   FP32 FMA per CUDA Core)
+#                   FP64: 2407e6*170*2*2/1e12          =   1.63676  TFLOPS (2   FP64 FMA ALUs per SM, 1:64 of FP32)
+#                   FP16: 2407e6*680*(4*4*8)*2/2/1e12  = 209.50528  TFLOPS (680 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/2 clock cycles @ 0% sparsity)
+#                   TF32: 2407e6*680*(4*4*4)*2/2/1e12  = 104.75264  TFLOPS (680 Tensor Cores contracting 4x4x4 TF32 FMAs/2 clock cycles @ 0% sparsity, 1:2 of FP16)
+#
 #
 #
 #
@@ -253,6 +273,9 @@ H100-SXM5-80GB  = {fp16= 989.429760, fp32= 66.908160, fp64= 33.454080, tf32= 494
 H100-NVL-94GB   = {fp16= 835.500000, fp32= 60.000000, fp64= 30.000000, tf32= 417.250000, memgb= 94,  membw= 3938, tdp= 400, reldate="2023-03-21"}
 H200-SXM5-141GB = {fp16= 989.429760, fp32= 66.908160, fp64= 33.454080, tf32= 494.714880, memgb=141,  membw= 4800, tdp= 700, reldate="2024-11-18"}
 H200-NVL-141GB  = {fp16= 835.500000, fp32= 60.000000, fp64= 30.000000, tf32= 417.250000, memgb=141,  membw= 4800, tdp= 600, reldate="2024-11-18"}
+RTX-PRO-6000-Blackwell-Workstation-Edition = {fp16= 503.803904, fp32=125.950976, fp64=  1.967984, tf32= 251.901952, memgb= 96,  membw= 1792, tdp= 600, reldate="2025-03-18"}
+RTX-5080                                   = {fp16= 112.551936, fp32= 56.275968, fp64=  0.879312, tf32=  56.275968, memgb= 16,  membw=  960, tdp= 360, reldate="2025-01-30"}
+RTX-5090                                   = {fp16= 209.505280, fp32=104.752640, fp64=  1.636760, tf32= 104.752640, memgb= 32,  membw= 1792, tdp= 575, reldate="2025-01-30"}
 
 # AMD
 MI300X          = {fp16=1307.443200, fp32=163.430400, fp64= 81.715200, tf32= 653.721600, memgb=192,  membw= 5325, tdp= 750, reldate="2023-12-06"}
