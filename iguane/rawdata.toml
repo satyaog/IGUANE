@@ -4,14 +4,13 @@
 #
 # FP64 is scalar FP64 throughput.
 # FP32 is scalar FP32 throughput.
-# FP16 is:
-#   - Tensor Core FP16    throughput @ 0% sparsity,  if Tensor Cores supported;
-#   - Packed FP16         throughput,                if Tensor Cores unsupported but packed FP16 supported;
-#   - Scalar FP16         throughput,                if neither Tensor Cores nor packed FP16 supported but FP16 natively supported;
-#   - Scalar FP32         throughput,                if neither Tensor Cores nor packed FP16 nor scalar FP16 supported.
+# FP16 is a measure of FP16 tensor math throughput, typified by mixed-precision FP16 multiplies with accumulation into FP32.
+#   - Tensor Core FP16    throughput @ 0% sparsity with accumulation into FP32, if Tensor Cores supported with mixed FP16*FP16 multiply with accumulation into FP32;
+#   - Packed FP16         throughput,                                           if Tensor Cores with mixed FP16*FP16 multiply with accumulation into FP32 unsupported but packed FP16*FP16 vector dot-product with accumulation into FP32 supported;
+#   - Scalar FP32         throughput,                                           if neither Tensor Cores nor packed FP16 supported.
 # TF32 is:
-#   - Tensor Core TF32    throughput @ 0% sparsity,  if Tensor Core TF32 datatype supported;
-#   - Scalar FP32         throughput,                if Tensor Core TF32 datatype not supported, or
+#   - Tensor Core TF32    throughput @ 0% sparsity with accumulation into FP32, if Tensor Core TF32 datatype supported;
+#   - Scalar FP32         throughput,                                           if Tensor Core TF32 datatype not supported, or
 #   - Throughput @ 0% sparsity (100% dense) of some easy-to-enable intermediate precision between FP16 and FP32, if superior to FP32.
 # MEMGB is capacity  of GPU in gigabytes.
 # MEMBW is bandwidth of GPU to global memory, in gigabytes/s.
@@ -36,33 +35,34 @@
 #     P100 SXM2:  Die GP100, 93.3% enabled (56 SMs, no Tensor Cores) @ Boost Clock 1480 MHz
 #                 FP32: 1480e6*3584*2/1e12        =  10.60864  TFLOPS (1 FP32 FMA per CUDA Core)
 #                 FP64: 1480e6*3584*2*0.5/1e12    =   5.30432  TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                 FP16: 1480e6*3584*2*2/1e12      =  21.21728  TFLOPS (2 FP16 FMA per CUDA Core, 2:1 of FP32; Packed arithmetic; No Tensor Cores; No gains from sparsity available)
+#                 FP16: 1480e6*3584*2/1e12        =  10.60864  TFLOPS (1 FP32 FMA per CUDA Core, FP32; No Tensor Cores; No gains from sparsity available; Packed FP16 supported, but not mixed FP16*FP16 multiply with accumulation into FP32)
 #     P100 PCIe:  Die GP100, 93.3% enabled (56 SMs, no Tensor Cores) @ Boost Clock 1303 MHz
 #                 FP32: 1303e6*3584*2/1e12        =   9.339904 TFLOPS (1 FP32 FMA per CUDA Core)
 #                 FP64: 1303e6*3584*2*0.5/1e12    =   4.669952 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                 FP16: 1303e6*3584*2*2/1e12      =  18.679808 TFLOPS (2 FP16 FMA per CUDA Core, 2:1 of FP32; Packed arithmetic; No Tensor Cores; No gains from sparsity available)
+#                 FP16: 1303e6*3584*2/1e12        =   9.339904 TFLOPS (1 FP32 FMA per CUDA Core, FP32; No Tensor Cores; No gains from sparsity available; Packed FP16 supported, but not mixed FP16*FP16 multiply with accumulation into FP32)
 #
 # https://images.nvidia.com/content/technologies/volta/pdf/volta-v100-datasheet-update-us-1165301-r5.pdf
 # https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf
 #     V100 SXM2:  Die GV100-895-A1 (16GB) / GV100-896-A1 (32GB), 95.2% enabled (80 SMs x 8 1st-gen Tensor Cores) @ Boost Clock 1530 MHz
 #                 FP32: 1530e6*5120*2/1e12        =  15.6672  TFLOPS (1 FP32 FMA per CUDA Core)
 #                 FP64: 1530e6*5120*2*0.5/1e12    =   7.8336  TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                 FP16: 1530e6*640*(4*4*4)*2/1e12 = 125.3376  TFLOPS (640 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                 FP16: 1530e6*640*(4*4*4)*2/1e12 = 125.3376  TFLOPS (640 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
 #     V100 PCIe:  Die GV100-893-A1 (16GB) / GV100-897-A1 (32GB), 95.2% enabled (80 SMs x 8 1st-gen Tensor Cores) @ Boost Clock 1370 MHz
 #                 FP32: 1370e6*5120*2/1e12        =  14.0288  TFLOPS (1 FP32 FMA per CUDA Core)
 #                 FP64: 1370e6*5120*2*0.5/1e12    =   7.0144  TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                 FP16: 1370e6*640*(4*4*4)*2/1e12 = 112.2304  TFLOPS (640 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                 FP16: 1370e6*640*(4*4*4)*2/1e12 = 112.2304  TFLOPS (640 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
 #     V100S PCIe: Die GV100-907A-A1, 95.2% enabled (80 SMs x 8 1st-gen Tensor Cores) @ Boost Clock 1597 MHz
 #                 FP32: 1597e6*5120*2/1e12        =  16.35328 TFLOPS (1 FP32 FMA per CUDA Core)
 #                 FP64: 1597e6*5120*2*0.5/1e12    =   8.17664 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                 FP16: 1597e6*640*(4*4*4)*2/1e12 = 130.82624 TFLOPS (640 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                 FP16: 1597e6*640*(4*4*4)*2/1e12 = 130.82624 TFLOPS (640 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
 #
 # https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/a100/pdf/nvidia-a100-datasheet.pdf
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf
+# https://arxiv.org/pdf/2208.11174
 #     A100 PCIe & SXM4: Die GA100 (PCIe 40GB: GA100-883AA-A1), 84.375% enabled (108 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1410 MHz
 #                       FP32: 1410e6*6912*2/1e12        =  19.49184 TFLOPS (1 FP32 FMA per CUDA Core)
 #                       FP64: 1410e6*6912*2*0.5/1e12    =   9.74592 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                       FP16: 1410e6*432*(8*4*8)*2/1e12 = 311.86944 TFLOPS (432 Tensor Cores contracting 8x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
+#                       FP16: 1410e6*432*(8*4*8)*2/1e12 = 311.86944 TFLOPS (432 Tensor Cores contracting 8x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
 #                       TF32: 1410e6*432*(8*4*4)*2/1e12 = 155.93472 TFLOPS (432 Tensor Cores contracting 8x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
 #
 # https://nvdam.widen.net/s/wrqrqt75vh/nvidia-rtx-a5000-datasheet
@@ -71,40 +71,43 @@
 #     A5000: Die GA102-850-A1, 76.2% enabled (64 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1695 MHz
 #            FP32: 1695e6*8192*2/1e12        =  27.77088 TFLOPS (1 FP32 FMA per CUDA Core)
 #            FP64: 1695e6*64*2*2/1e12        =   0.43392 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
-#            FP16: 1695e6*256*(4*4*8)*2/1e12 = 111.08352 TFLOPS (256 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
-#            FP16: 1695e6*256*(4*4*4)*2/1e12 =  55.54176 TFLOPS (256 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#            FP16: 1695e6*256*(4*4*8)*2/1e12 = 111.08352 TFLOPS (256 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#            TF32: 1695e6*256*(4*4*4)*2/1e12 =  55.54176 TFLOPS (256 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
 #     A6000: Die GA102-875-A1, fully enabled (84 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1800 MHz
 #            FP32: 1800e6*10752*2/1e12       =  38.7072  TFLOPS (1 FP32 FMA per CUDA Core)
 #            FP64: 1800e6*84*2*2/1e12        =   0.6048  TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
-#            FP16: 1800e6*336*(4*4*8)*2/1e12 = 154.8288  TFLOPS (336 Tensor Cores contracting 4x4x8 FP16 FMAs/clock cycle @ 0% sparsity)
-#            FP16: 1800e6*336*(4*4*4)*2/1e12 =  77.4144  TFLOPS (336 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
+#            FP16: 1800e6*336*(4*4*8)*2/1e12 = 154.8288  TFLOPS (336 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#            TF32: 1800e6*336*(4*4*4)*2/1e12 =  77.4144  TFLOPS (336 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
 #
 # https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/quadro-rtx-8000-us-nvidia-946977-r1-web.pdf
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/design-visualization/technologies/turing-architecture/NVIDIA-Turing-Architecture-Whitepaper.pdf
-#     RTX-2080:       Die TU104-400-A1, 95.8% enabled (46 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1710 MHz
-#                     FP32: 1710e6*2944*2/1e12        =  10.06848 TFLOPS (1 FP32 FMA per CUDA Core)
-#                     FP64: 1710e6*46*2*2/1e12        =   0.31464 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                     FP16: 1710e6*368*(4*4*4)*2/1e12 =  80.54784 TFLOPS (368 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+# https://www.nvidia.com/content/dam/en-zz/Solutions/Data-Center/tesla-t4/t4-tensor-core-datasheet-951643.pdf
+#     RTX-2080:       Die TU104-400-A1, 95.8% enabled (46 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1710 MHz. Reference edition, *NOT* Founders Edition (Founders clocks up to 1800 MHz)
+#                     FP32: 1710e6*2944*2/1e12          =  10.06848 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1710e6*46*2*2/1e12          =   0.31464 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1710e6*368*(4*4*4)*2/2/1e12 =  40.27392 TFLOPS (368 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/2 clock cycles; no gains from sparsity available)
 #     RTX-2080-Super: Die TU104-450-A1, fully enabled (48 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1815 MHz
-#                     FP32: 1815e6*3072*2/1e12        =  11.15136 TFLOPS (1 FP32 FMA per CUDA Core)
-#                     FP64: 1815e6*48*2*2/1e12        =   0.34848 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                     FP16: 1815e6*384*(4*4*4)*2/1e12 =  89.21088 TFLOPS (384 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
-#     RTX-2080-Ti:    Die TU102-300-K1-A1, 94.4% enabled (68 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1545 MHz
-#                     FP32: 1545e6*4352*2/1e12        =  13.44768 TFLOPS (1 FP32 FMA per CUDA Core)
-#                     FP64: 1545e6*68*2*2/1e12        =   0.42024 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                     FP16: 1545e6*544*(4*4*4)*2/1e12 = 107.58144 TFLOPS (544 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                     FP32: 1815e6*3072*2/1e12          =  11.15136 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1815e6*48*2*2/1e12          =   0.34848 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1815e6*384*(4*4*4)*2/2/1e12 =  44.60544 TFLOPS (384 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/2 clock cycles; no gains from sparsity available)
+#     RTX-2080-Ti:    Die TU102-300-K1-A1, 94.4% enabled (68 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1545 MHz. Reference edition, *NOT* Founders Edition (Founders clocks up to 1635 MHz)
+#                     FP32: 1545e6*4352*2/1e12          =  13.44768 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1545e6*68*2*2/1e12          =   0.42024 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1545e6*544*(4*4*4)*2/2/1e12 =  53.79072 TFLOPS (544 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/2 clock cycles; no gains from sparsity available)
 #     TITAN RTX:      Die TU102-400-A1, fully enabled (72 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1770 MHz
-#                     FP32: 1770e6*4608*2/1e12        =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
-#                     FP64: 1770e6*72*2*2/1e12        =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                     FP16: 1770e6*576*(4*4*4)*2/1e12 = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                     FP32: 1770e6*4608*2/1e12          =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1770e6*72*2*2/1e12          =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1770e6*576*(4*4*4)*2/1e12   = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
+#                                                         (*) The above computation is in question, since it is unknown if the TITAN RTX has the half-rate or full-rate Tensor Core FP32 accumulation.
+#                                                             There appears to be no discernible logic based on model or die number by which one can recognize this
 #     T4:             Die TU104, 83.3% enabled (40 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1590 MHz
-#                     FP32: 1590e6*2560*2/1e12        =   8.1408  TFLOPS (1 FP32 FMA per CUDA Core)
-#                     FP64: 1590e6*40*2*2/1e12        =   0.2544  TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                     FP16: 1590e6*320*(4*4*4)*2/1e12 =  65.1264  TFLOPS (320 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                     FP32: 1590e6*2560*2/1e12          =   8.1408  TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1590e6*40*2*2/1e12          =   0.2544  TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1590e6*320*(4*4*4)*2/1e12   =  65.1264  TFLOPS (320 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
 #     RTX6000/8000:   Die TU102, fully enabled (72 SMs x 8 2nd-gen Tensor Cores) @ Boost Clock 1770 MHz
-#                     FP32: 1770e6*4608*2/1e12        =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
-#                     FP64: 1770e6*72*2*2/1e12        =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
-#                     FP16: 1770e6*576*(4*4*4)*2/1e12 = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 FP16 FMAs/clock cycle; no gains from sparsity available)
+#                     FP32: 1770e6*4608*2/1e12          =  16.31232 TFLOPS (1 FP32 FMA per CUDA Core)
+#                     FP64: 1770e6*72*2*2/1e12          =   0.50976 TFLOPS (2 FP64 FMA ALUs per SM, 1:32 of FP32)
+#                     FP16: 1770e6*576*(4*4*4)*2/1e12   = 130.49856 TFLOPS (576 Tensor Cores contracting 4x4x4 mixed FP32 += FP16*FP16 FMAs/clock cycle; no gains from sparsity available)
 #
 # https://images.nvidia.com/aem-dam/en-zz/Solutions/technologies/NVIDIA-ADA-GPU-PROVIZ-Architecture-Whitepaper_1.1.pdf
 # https://resources.nvidia.com/en-us-l40s/l40s-datasheet-28413
@@ -194,17 +197,17 @@
 #                            TFLOPS           TFLOPS           TFLOPS            TFLOPS         GB          GB/s         W          Release Date
 K80             = {fp16=      false, fp32=  4.368000, fp64=  1.456000, tf32=      false, memgb= 12,  membw=  240, tdp= 150, reldate="2014-11-17"}
 M40             = {fp16=      false, fp32=  6.844416, fp64=  0.213888, tf32=      false, memgb= 12,  membw=  288, tdp= 250, reldate="2015-11-10"}
-P100-PCIe-12GB  = {fp16=  18.679808, fp32=  9.339904, fp64=  4.669952, tf32=      false, memgb= 12,  membw=  549, tdp= 250, reldate="2016-06-20"}
-P100-PCIe-16GB  = {fp16=  18.679808, fp32=  9.339904, fp64=  4.669952, tf32=      false, memgb= 16,  membw=  732, tdp= 250, reldate="2016-06-20"}
-P100-SXM2-16GB  = {fp16=  21.217280, fp32= 10.608640, fp64=  5.304320, tf32=      false, memgb= 16,  membw=  732, tdp= 300, reldate="2016-04-05"}
+P100-PCIe-12GB  = {fp16=   9.339904, fp32=  9.339904, fp64=  4.669952, tf32=      false, memgb= 12,  membw=  549, tdp= 250, reldate="2016-06-20"}
+P100-PCIe-16GB  = {fp16=   9.339904, fp32=  9.339904, fp64=  4.669952, tf32=      false, memgb= 16,  membw=  732, tdp= 250, reldate="2016-06-20"}
+P100-SXM2-16GB  = {fp16=  10.608640, fp32= 10.608640, fp64=  5.304320, tf32=      false, memgb= 16,  membw=  732, tdp= 300, reldate="2016-04-05"}
 V100-PCIe-16GB  = {fp16= 112.230400, fp32= 14.028800, fp64=  7.014400, tf32=      false, memgb= 16,  membw=  900, tdp= 250, reldate="2017-06-21"}
 V100-PCIe-32GB  = {fp16= 112.230400, fp32= 14.028800, fp64=  7.014400, tf32=      false, memgb= 32,  membw=  900, tdp= 250, reldate="2018-03-27"}
 V100-SXM2-16GB  = {fp16= 125.337600, fp32= 15.667200, fp64=  7.833600, tf32=      false, memgb= 16,  membw=  900, tdp= 300, reldate="2017-05-10"}
 V100-SXM2-32GB  = {fp16= 125.337600, fp32= 15.667200, fp64=  7.833600, tf32=      false, memgb= 32,  membw=  900, tdp= 300, reldate="2018-03-27"}
 V100S-PCIe-32GB = {fp16= 130.826240, fp32= 16.353280, fp64=  8.176640, tf32=      false, memgb= 32,  membw= 1134, tdp= 250, reldate="2019-11-26"}
-RTX-2080        = {fp16=  80.547840, fp32= 10.068480, fp64=  0.314640, tf32=      false, memgb=  8,  membw=  448, tdp= 215, reldate="2018-09-20"}
-RTX-2080-Super  = {fp16=  89.210880, fp32= 11.151360, fp64=  0.348480, tf32=      false, memgb=  8,  membw=  496, tdp= 250, reldate="2019-07-23"}
-RTX-2080-Ti     = {fp16= 107.581440, fp32= 13.447680, fp64=  0.420240, tf32=      false, memgb= 11,  membw=  616, tdp= 250, reldate="2018-09-27"}
+RTX-2080        = {fp16=  40.273920, fp32= 10.068480, fp64=  0.314640, tf32=      false, memgb=  8,  membw=  448, tdp= 215, reldate="2018-09-20"}
+RTX-2080-Super  = {fp16=  44.605440, fp32= 11.151360, fp64=  0.348480, tf32=      false, memgb=  8,  membw=  496, tdp= 250, reldate="2019-07-23"}
+RTX-2080-Ti     = {fp16=  53.790720, fp32= 13.447680, fp64=  0.420240, tf32=      false, memgb= 11,  membw=  616, tdp= 250, reldate="2018-09-27"}
 TITAN-RTX       = {fp16= 130.498560, fp32= 16.312320, fp64=  0.509760, tf32=      false, memgb= 24,  membw=  672, tdp= 280, reldate="2018-12-18"}
 T4              = {fp16=  65.126400, fp32=  8.140800, fp64=  0.254400, tf32=      false, memgb= 16,  membw=  300, tdp=  70, reldate="2018-09-12"}
 RTX6000         = {fp16= 130.498560, fp32= 16.312320, fp64=  0.509760, tf32=      false, memgb= 24,  membw=  672, tdp= 260, reldate="2018-08-13"}
