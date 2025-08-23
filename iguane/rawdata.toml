@@ -153,19 +153,23 @@
 #                      TF32: 2520e6*512*(4*4*4)*2/2/1e12 =  82.57536 TFLOPS (512 Tensor Cores contracting 4x4x4 TF32 FMAs/2 clock cycles @ 0% sparsity, 1:2 of FP16, 1:1 of FP32)
 #
 # https://resources.nvidia.com/en-us-tensor-core
+# https://resources.nvidia.com/en-us-hopper-architecture/nvidia-h100-tensor-c
 # https://www.nvidia.com/en-us/data-center/h100/
+# https://en.wikipedia.org/wiki/Nvidia_Tesla#Specifications
+# https://nvdam.widen.net/s/nb5zzzsjdf/hpc-datasheet-sc23-h200-datasheet-3002446
+# https://resources.nvidia.com/en-us-data-center-overview-mc/en-us-data-center-overview/hpc-datasheet-sc23-h200
 #     H100_SXM has 80GB memory and H100_NVL has 94GB (warning, they provide the "cheating" values with sparsity)
 #     H100 SXM5: Die GH100, 91.6% enabled (132 SMs x 4 = 528 4th-gen Tensor Cores) @ Boost Clock 1830 MHz (FP8, FP16, BF16, TF32 Tensor),
 #                                                                                                1980 MHz (FP32 non-Tensor, FP64)
 #                FP32: 1980e6*16896*2/1e12        =  66.90816 TFLOPS (1   FP32 FMA per CUDA Core)
 #                FP64: 1980e6*16896*2*0.5/1e12    =  33.45408 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                FP16: 1830e6*528*(8*4*16)*2/1e12 = 989.42976 TFLOPS (528 Tensor Cores contracting 8x4x16 FP16 FMAs/clock cycle @ 0% sparsity)
+#                FP16: 1830e6*528*(8*4*16)*2/1e12 = 989.42976 TFLOPS (528 Tensor Cores contracting 8x4x16 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
 #                TF32: 1830e6*528*(8*4*8)*2/1e12  = 494.71488 TFLOPS (528 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
 #     H100 PCIe: Die GH100, 79.2% enabled (114 SMs x 4 = 456 4th-gen Tensor Cores) @ Boost Clock 1620 MHz (FP8, FP16, BF16, TF32 Tensor),
 #                                                                                                1755 MHz (FP32 non-Tensor, FP64)
 #                FP32: 1755e6*14592*2/1e12        =  51.21792 TFLOPS (1   FP32 FMA per CUDA Core)
 #                FP64: 1755e6*14592*2*0.5/1e12    =  25.60896 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                FP16: 1620e6*456*(8*4*16)*2/1e12 = 756.44928 TFLOPS (456 Tensor Cores contracting 8x4x16 FP16 FMAs/clock cycle @ 0% sparsity)
+#                FP16: 1620e6*456*(8*4*16)*2/1e12 = 756.44928 TFLOPS (456 Tensor Cores contracting 8x4x16 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
 #                TF32: 1620e6*456*(8*4*8)*2/1e12  = 378.22464 TFLOPS (456 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
 #     H100 NVL:  Die GH100, () @ Boost Clock 1785 MHz (?)
 #                (Aucune information sur géométrie et clocks)
@@ -177,10 +181,23 @@
 #                (La seconde inférence est plus plausible car cohérente avec le Max Boost Clock déclaré dans Product Brief)
 #                FP32: 1785e6*16896*2/1e12        =  60.31872 TFLOPS (1   FP32 FMA per CUDA Core)
 #                FP64: 1785e6*16896*2*0.5/1e12    =  30.15936 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
-#                FP16: 1545e6*528*(8*4*16)*2/1e12 = 835.33824 TFLOPS (456 Tensor Cores contracting 8x4x16 FP16 FMAs/clock cycle @ 0% sparsity)
-#                TF32: 1545e6*528*(8*4*8)*2/1e12  = 417.66912 TFLOPS (456 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
+#                FP16: 1545e6*528*(8*4*16)*2/1e12 = 835.33824 TFLOPS (528 Tensor Cores contracting 8x4x16 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#                TF32: 1545e6*528*(8*4*8)*2/1e12  = 417.66912 TFLOPS (528 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
 #                (Chiffres déclarés par NVIDIA: 60TF FP32, 30TF FP64, 835TF FP16 non-sparse, 3341TF FP8 sparse.)
 #                (Il n'y a aucun agrément sur les specs exacts du NVL sur Internet. C'est ludique.)
+#     H200 SXM5: Die GH100 (?), 91.6% enabled (132 SMs x 4 = 528 4th-gen Tensor Cores) @ Boost Clock 1830 MHz (FP8, FP16, BF16, TF32 Tensor),
+#                                                                                                    1980 MHz (FP32 non-Tensor, FP64)
+#                FP32: 1980e6*16896*2/1e12        =  66.90816 TFLOPS (1   FP32 FMA per CUDA Core)
+#                FP64: 1980e6*16896*2*0.5/1e12    =  33.45408 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
+#                FP16: 1830e6*528*(8*4*16)*2/1e12 = 989.42976 TFLOPS (528 Tensor Cores contracting 8x4x16 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#                TF32: 1830e6*528*(8*4*8)*2/1e12  = 494.71488 TFLOPS (528 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
+#                (Appears to primarily be a memory upgrade of H100 SXM5, 80GB HBM3 -> 141GB HBM3e and with higher bandwidth)
+#     H200 NVL:  Die GH100 (Identical to H100 NVL, see misteries)
+#                FP32: 1785e6*16896*2/1e12        =  60.31872 TFLOPS (1   FP32 FMA per CUDA Core)
+#                FP64: 1785e6*16896*2*0.5/1e12    =  30.15936 TFLOPS (0.5 FP64 FMA per CUDA Core, 1:2 of FP32)
+#                FP16: 1545e6*528*(8*4*16)*2/1e12 = 835.33824 TFLOPS (528 Tensor Cores contracting 8x4x16 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#                TF32: 1545e6*528*(8*4*8)*2/1e12  = 417.66912 TFLOPS (528 Tensor Cores contracting 8x4x8  TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16)
+#                (Appears to primarily be a memory upgrade of H100 NVL, 80GB HBM3 -> 141GB HBM3e and with higher bandwidth)
 #
 #
 #
@@ -234,6 +251,8 @@ L40S            = {fp16= 366.428160, fp32= 91.607040, fp64=  1.431360, tf32= 183
 H100-PCIe-80GB  = {fp16= 756.449280, fp32= 51.217920, fp64= 25.608960, tf32= 378.224640, memgb= 80,  membw= 2039, tdp= 350, reldate="2022-03-22"}
 H100-SXM5-80GB  = {fp16= 989.429760, fp32= 66.908160, fp64= 33.454080, tf32= 494.714880, memgb= 80,  membw= 3352, tdp= 700, reldate="2022-03-22"}
 H100-NVL-94GB   = {fp16= 835.500000, fp32= 60.000000, fp64= 30.000000, tf32= 417.250000, memgb= 94,  membw= 3938, tdp= 400, reldate="2023-03-21"}
+H200-SXM5-141GB = {fp16= 989.429760, fp32= 66.908160, fp64= 33.454080, tf32= 494.714880, memgb=141,  membw= 4800, tdp= 700, reldate="2024-11-18"}
+H200-NVL-141GB  = {fp16= 835.500000, fp32= 60.000000, fp64= 30.000000, tf32= 417.250000, memgb=141,  membw= 4800, tdp= 600, reldate="2024-11-18"}
 
 # AMD
 MI300X          = {fp16=1307.443200, fp32=163.430400, fp64= 81.715200, tf32= 653.721600, memgb=192,  membw= 5325, tdp= 750, reldate="2023-12-06"}
