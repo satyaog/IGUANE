@@ -98,6 +98,11 @@
 # https://nvdam.widen.net/s/wrqrqt75vh/nvidia-rtx-a5000-datasheet
 # https://www.nvidia.com/content/dam/en-zz/Solutions/design-visualization/quadro-product-literature/proviz-print-nvidia-rtx-a6000-datasheet-us-nvidia-1454980-r9-web%20(1).pdf
 # https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf
+#     A40:   Die GA102, fully enabled (84 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1740 MHz
+#            FP32: 1740e6*10752*2/1e12       =  37.41696 TFLOPS (1 FP32 FMA per CUDA Core)
+#            FP64: 1740e6*84*2*2/1e12        =   0.58464 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
+#            FP16: 1740e6*336*(4*4*8)*2/1e12 = 149.66784 TFLOPS (336 Tensor Cores contracting 4x4x8 mixed FP32 += FP16*FP16 FMAs/clock cycle @ 0% sparsity)
+#            TF32: 1740e6*336*(4*4*4)*2/1e12 =  74.83392 TFLOPS (336 Tensor Cores contracting 4x4x4 TF32 FMAs/clock cycle @ 0% sparsity, 1:2 of FP16, 2:1 of FP32)
 #     A5000: Die GA102-850-A1, 76.2% enabled (64 SMs x 4 3rd-gen Tensor Cores) @ Boost Clock 1695 MHz
 #            FP32: 1695e6*8192*2/1e12        =  27.77088 TFLOPS (1 FP32 FMA per CUDA Core)
 #            FP64: 1695e6*64*2*2/1e12        =   0.43392 TFLOPS (2 FP64 FMA ALUs per SM, 1:64 of FP32)
@@ -216,6 +221,7 @@ A100-PCIe-40GB  = {fp16= 311.869440, fp32= 19.491840, fp64=  9.745920, tf32= 155
 A100-PCIe-80GB  = {fp16= 311.869440, fp32= 19.491840, fp64=  9.745920, tf32= 155.934720, memgb= 80,  membw= 1555, tdp= 250, reldate="2021-06-28"}
 A100-SXM4-40GB  = {fp16= 311.869440, fp32= 19.491840, fp64=  9.745920, tf32= 155.934720, memgb= 40,  membw= 1555, tdp= 400, reldate="2020-05-14"}
 A100-SXM4-80GB  = {fp16= 311.869440, fp32= 19.491840, fp64=  9.745920, tf32= 155.934720, memgb= 80,  membw= 1555, tdp= 400, reldate="2020-11-16"}
+A40             = {fp16= 149.667840, fp32= 37.416960, fp64=  0.584640, tf32=  74.833920, memgb= 48,  membw=  696, tdp= 300, reldate="2020-10-05"}
 A5000           = {fp16= 111.083520, fp32= 27.770880, fp64=  0.433920, tf32=  55.541760, memgb= 24,  membw=  768, tdp= 230, reldate="2021-04-12"}
 A6000           = {fp16= 154.828800, fp32= 38.707200, fp64=  0.604800, tf32=  77.414400, memgb= 48,  membw=  768, tdp= 300, reldate="2020-10-05"}
 RTX-4080        = {fp16= 194.949120, fp32= 48.737280, fp64=  0.761520, tf32=  97.474560, memgb= 16,  membw=  717, tdp= 320, reldate="2022-11-16"}
