@@ -17,7 +17,7 @@ def matchgpu(name, pat):
     return glob.fnmatch.fnmatchcase(name.lower(), pat.lower())
 
 
-if __name__ == "__main__":
+def main():
     argp = argparse.ArgumentParser()
     argp.add_argument('--reverse',   '-r',   action='store_true',
                       help="Reverse listing")
@@ -160,3 +160,7 @@ if __name__ == "__main__":
                     print(f"{DATA[k]:-5.2f} {k}")
 
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
