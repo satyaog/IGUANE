@@ -4,6 +4,41 @@ Supported FoMs:
   - DRAC's [UGR/RGU](https://docs.alliancecan.ca/wiki/Allocations_and_compute_scheduling#Reference_GPU_Units)
   - My own proposal, IGUANE/IGUANA.
 
+## Arguments
+
+### General
+
+| Flag                   | Short | Description                                                                                         |
+|------------------------|-------|-----------------------------------------------------------------------------------------------------|
+| `--reverse`            | `-r`  | Reverse the GPU listing order                                                                       |
+| `--sort`               | `-s`  | Sort GPU listing by FoM value                                                                       |
+| `--list-gpus`          | `-l`  | Print all known GPU names                                                                           |
+| `--list-units`         |       | Print all known unit/FoM names                                                                      |
+| `--list-fom-versions`  |       | Print all known FoM ponderation versions                                                            |
+| `--dump-raw`           |       | Dump raw GPU spec data as JSON                                                                      |
+| `--input PATH`         | `-i`  | Path to a cluster inventory JSON (maps GPU names to counts); outputs total FoM-weighted equivalents |
+| `--gpu PATTERN`        | `-G`  | Filter output to GPUs matching a name prefix or glob pattern                                        |
+| `--verbose`            | `-v`  | Increase verbosity (repeat for more: `-vv`, `-vvv`)                                                 |
+
+### Output format
+
+| Flag              | Short | Description                                     |
+|-------------------|-------|-------------------------------------------------|
+| `--json`          | `-j`  | Output as JSON                                  |
+| `--parsable`      | `-p`  | Output as delimiter-separated text              |
+| `--delimiter STR` | `-d`  | Delimiter used with `--parsable` (default: `,`) |
+
+### Units / FoM selection
+
+| Flag                          | Short | Description                                                                         |
+|-------------------------------|-------|-------------------------------------------------------------------------------------|
+| `--unit NAME` / `--fom NAME`  | `-u`  | Select the FoM to compute (`ugr`, `iguane`, or any registered name; default: `ugr`) |
+| `--ugr` / `--rgu`             |       | Shorthand to select UGR/RGU (DRAC's Reference GPU Unit)                             |
+| `--iguane` / `--iguana`       |       | Shorthand to select IGUANE/IGUANA FoM                                               |
+| `--fom-version VER`           |       | Select FoM ponderation version (`1.0`, `2.0`, `iguane`, …)                          |
+| `--norm`                      |       | Normalize FoM weights to sum to 1.0                                                 |
+| `--custom-weights JSON`       |       | Override weights with a JSON object: `{"ref": "GPU-NAME", "fp16": 0.0, …}`          |
+
 *Examples*:
 
     $ python -m iguane -sr
