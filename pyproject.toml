@@ -1,18 +1,35 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
 name = "iguane"
 version = "0.1.0"
 description = "A tool to explore Figures-of-Merit for some GPUs"
-authors = ["Olexa Bilaniuk"]
-license = "MIT"
+authors = [{ name = "Olexa Bilaniuk" }]
+license = { text = "MIT" }
 readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.5.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
+[project.scripts]
+iguane = "iguane.__main__:main"
+iguane-mcp = "iguane.mcp_server:main"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.3"
-pytest-regressions = "^2.5.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-regressions>=2.5.0",
+]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.hatch.envs.default]
+installer = "uv"
+dependency-groups = ["dev"]
+post-install-commands = [
+    "uv sync",
+]
+
+[tool.hatch.envs.default.scripts]
+uv = 'UV_PROJECT_ENVIRONMENT="{env:VIRTUAL_ENV}" "$(which uv)" {args}'

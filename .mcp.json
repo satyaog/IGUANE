@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "iguane": {
+      "command": "uv",
+      "args": ["run", "iguane-mcp"]
+    }
+  }
+}
